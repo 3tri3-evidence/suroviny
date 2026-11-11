@@ -6,7 +6,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const btnAddOrder = document.getElementById('btn-add-order');
     const inputOrderDate = document.getElementById('order-date');
     const btnTakePhoto = document.getElementById('btn-take-photo');
-    const cameraInput = document.getElementById('camera-input');
     const photosContainer = document.getElementById('photos-container');
     const photoCountBadge = document.getElementById('photo-count');
     const btnExport = document.getElementById('btn-export');
@@ -131,26 +130,31 @@ document.addEventListener('DOMContentLoaded', () => {
 
     selectOrder.addEventListener('change', updateUIState);
 
+    // Spolehlivé spuštění fotoaparátu/galerie přizpůsobené pro iPhone (Safari)
     btnTakePhoto.addEventListener('click', () => {
-        cameraInput.click();
-    });
+        const dynamicInput = document.createElement('input');
+        dynamicInput.type = 'file';
+        dynamicInput.accept = 'image/*';
+        dynamicInput.capture = 'environment';
+        
+        dynamicInput.onchange = (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
 
-    cameraInput.addEventListener('change', (e) => {
-        const file = e.target.files[0];
-        if (!file) return;
-
-        const reader = new FileReader();
-        reader.onload = function(event) {
-            const activeOrderId = selectOrder.value;
-            const order = orders.find(o => o.id == activeOrderId);
-            if (order) {
-                order.photos.push(event.target.result);
-                saveData();
-                updateUIState();
-            }
-            cameraInput.value = '';
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                const activeOrderId = selectOrder.value;
+                const order = orders.find(o => o.id == activeOrderId);
+                if (order) {
+                    order.photos.push(event.target.result);
+                    saveData();
+                    updateUIState();
+                }
+            };
+            reader.readAsDataURL(file);
         };
-        reader.readAsDataURL(file);
+
+        dynamicInput.click();
     });
 
     btnDelete.addEventListener('click', () => {
