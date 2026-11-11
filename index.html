@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="cs">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#243b35">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="Evidence surovin">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="apple-touch-icon" href="icon-192.png">
+  <title>Evidence surovin</title>
+  <style>
+    :root{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:#202823;background:#f4f6f3}
+    *{box-sizing:border-box} body{margin:0;padding:env(safe-area-inset-top) 0 env(safe-area-inset-bottom)}
+    header{background:#243b35;color:white;padding:22px 18px 18px}
+    header h1{font-size:23px;margin:0 0 5px} header p{margin:0;color:#d9e5df;font-size:13px}
+    main{max-width:720px;margin:auto;padding:16px}
+    .card{background:white;border-radius:16px;padding:16px;margin-bottom:14px;box-shadow:0 2px 12px #1b30200d}
+    label{display:block;font-weight:650;font-size:14px;margin:0 0 7px}
+    input,select{width:100%;font:inherit;border:1px solid #d6ddd7;border-radius:11px;padding:12px;background:white;color:#202823}
+    .row{display:flex;gap:9px;align-items:center}.row>*{flex:1}
+    button{border:0;border-radius:12px;padding:13px 15px;font:650 15px inherit;cursor:pointer}
+    .primary{background:#243b35;color:white;width:100%;font-size:16px;padding:16px}
+    .secondary{background:#e9efeb;color:#243b35}
+    .tiny{font-size:12px;color:#65736b;line-height:1.45}
+    .section-title{font-size:17px;font-weight:750;margin:0 0 12px}
+    .empty{color:#6d786f;text-align:center;padding:24px 8px}
+    .photos{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+    .photo{border:1px solid #e4e9e5;border-radius:10px;overflow:hidden;background:#f8faf8}
+    .photo img{display:block;width:100%;aspect-ratio:1;object-fit:cover}
+    .photo div{font-size:11px;padding:5px 7px;color:#59665e}
+    .toolbar{display:flex;gap:8px;margin-top:12px}.toolbar button{flex:1}
+    .notice{background:#fff8e8;border:1px solid #f0dfb8;color:#70551d;border-radius:12px;padding:12px;font-size:12px;line-height:1.45}
+    .hidden{display:none!important}
+    #cameraInput{display:none}
+    footer{text-align:center;color:#89928b;font-size:11px;padding:8px 16px 24px}
+  </style>
+</head>
+<body>
+<header>
+  <h1>Evidence surovin</h1>
+  <p>Fotografická evidence cukrářských zakázek</p>
+</header>
+<main>
+  <section class="card">
+    <div class="section-title">1. Vyber zakázku</div>
+    <label for="jobSelect">Aktivní zakázka</label>
+    <select id="jobSelect"><option value="">Načítám…</option></select>
+    <div class="row" style="margin-top:10px">
+      <input id="newJobName" placeholder="Název zakázky, např. Makronky – kavárna" aria-label="Název nové zakázky">
+      <button class="secondary" id="createJob">Přidat</button>
+    </div>
+    <div style="margin-top:10px">
+      <label for="newJobDate">Datum zakázky</label>
+      <input id="newJobDate" type="date">
+    </div>
+  </section>
+
+  <section class="card">
+    <div class="section-title">2. Vyfoť surovinu</div>
+    <button class="primary" id="takePhoto">📷 Vyfotit surovinu</button>
+    <input id="cameraInput" type="file" accept="image/*" capture="environment">
+    <p class="tiny" style="margin:10px 0 0">Po pořízení fotografie se automaticky přidá k právě vybrané zakázce.</p>
+  </section>
+
+  <section class="card">
+    <div class="row" style="align-items:center">
+      <div class="section-title" style="margin:0">3. Fotografie zakázky</div>
+      <div id="photoCount" class="tiny" style="text-align:right">0 fotografií</div>
+    </div>
+    <div id="photoGrid" class="photos" style="margin-top:13px"></div>
+    <div id="emptyPhotos" class="empty">Vyber zakázku a pořiď první fotografii.</div>
+    <div class="toolbar">
+      <button class="secondary" id="exportJob">Exportovat zakázku</button>
+      <button class="secondary" id="deleteJob">Smazat zakázku</button>
+    </div>
+    <p class="tiny" style="margin:10px 0 0">Export vytvoří ZIP s názvem zakázky a všemi jejími fotografiemi.</p>
+  </section>
+
+  <div class="notice">
+    <strong>Důležité pro iPhone:</strong> Safari neumí webové aplikaci dovolit tichý zápis do libovolné složky v aplikaci Soubory. Fotografie se proto bezpečně ukládají do interní databáze aplikace. Při exportu se otevře nabídka Sdílet – zvol „Uložit do Souborů“ a vyber cílové umístění. ZIP obsahuje složku zakázky i všechny fotografie.
+  </div>
+</main>
+<footer>Data zůstávají v tomto zařízení. Pravidelně exportuj zálohu zakázek.</footer>
+<script src="app.js"></script>
+</body>
+</html>
