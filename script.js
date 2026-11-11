@@ -6,7 +6,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const btnAddOrder = document.getElementById('btn-add-order');
     const inputOrderDate = document.getElementById('order-date');
     const btnTakePhoto = document.getElementById('btn-take-photo');
-    const cameraInput = document.getElementById('camera-input'); // Pevný prvek z HTML
+    const cameraInput = document.getElementById('camera-input');
     const photosContainer = document.getElementById('photos-container');
     const photoCountBadge = document.getElementById('photo-count');
     const btnExport = document.getElementById('btn-export');
@@ -54,44 +54,65 @@ document.addEventListener('DOMContentLoaded', () => {
         const order = orders.find(o => o.id == activeOrderId);
         if (!order) return;
 
-        photoCountBadge.textContent = `${order.photos.length} ${order.photos.length === 1 ? 'fotografie' : order.photos.length < 5 && order.photos.length > 0 ? 'fotografie' : 'fotografií'}`;
+        const count = order.photos.length;
+        photoCountBadge.textContent = `${count} ${count === 1 ? 'fotografie' : count > 1 && count < 5 ? 'fotografie' : 'fotografií'}`;
 
-        if (order.photos.length === 0) {
+        if (count === 0) {
             photosContainer.innerHTML = '<p class="empty-text">Zatím žádné fotky. Klikněte na Vyfotit surovinu.</p>';
             return;
         }
 
         photosContainer.innerHTML = '';
-        order.photos.forEach((photo, index) => {
+
+        order.photos.forEach((photoData, index) => {
             const item = document.createElement('div');
             item.className = 'photo-item';
             
             const img = document.createElement('img');
-            img.src = photo;
+            img.src = photoData;
+            img.alt = `Surovina ${index + 1}`;
             item.appendChild(img);
 
             const actions = document.createElement('div');
             actions.className = 'photo-actions';
 
+            // Tlačítko pro spolehlivé zobrazení a uložení do telefonu bez chyb o internetu
             const dlBtn = document.createElement('button');
             dlBtn.className = 'photo-action-btn';
             dlBtn.innerHTML = '📥 Uložit';
-            dlBtn.title = 'Uložit do zařízení / telefonu';
-            dlBtn.onclick = () => {
-                const a = document.createElement('a');
-                a.href = photo;
-                a.download = `${order.name}_${index + 1}.jpg`;
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
+            dlBtn.title = 'Uložit do telefonu';
+            dlBtn.onclick = (e) => {
+                e.stopPropagation();
+                // Otevře čisté okno s obrázkem, kde funguje podržení prstu a uložení do fotek
+                const win = window.open();
+                if (win) {
+                    win.document.write(`
+                        <html>
+                            <head><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>${order.name} - foto ${index + 1}</title></head>
+                            <body style="margin:0; background:#111; display:flex; flex-direction:column; align-items:center; justify-content:center; min-height:100vh; font-family:sans-serif; color:white; text-align:center; padding:15px;">
+                                <div style="background:rgba(255,255,255,0.155); padding:12px 18px; border-radius:10px; margin-bottom:15px; font-size:15px; max-width:90%;">
+                                    📱 <b>Jak uložit do iPhonu:</b><br>Podržte prst na fotce a zvolte <b>„Uložit do fotek“</b>.
+                                </div>
+                                <img src="${photoData}" style="max-width:100%; max-height:70vh; border-radius:8px; object-fit:contain;" />
+                                <br>
+                                <button onclick="window.close()" style="padding:12px 24px; background:#fff; color:#000; border:none; border-radius:8px; font-weight:bold; font-size:15px; cursor:pointer; margin-top:10px;">Zavřít okno</button>
+                            </body>
+                        </html>
+                    `);
+                    win.document.close();
+                } else {
+                    alert('Prohlížeč zablokoval otevření okna s fotkou. Povolte prosím vyskakovací okna.');
+                }
             };
             actions.appendChild(dlBtn);
 
+            // Tlačítko pro smazání fotky
             const delBtn = document.createElement('button');
             delBtn.className = 'photo-action-btn';
             delBtn.innerHTML = '❌';
             delBtn.title = 'Smazat fotografii';
-            delBtn.onclick = () => {
+            delBtn.onclick = (e) => {
+                e.stopPropagation();
                 if (confirm('Opravdu chcete tuto fotku smazat?')) {
                     order.photos.splice(index, 1);
                     saveData();
@@ -131,14 +152,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
     selectOrder.addEventListener('change', updateUIState);
 
-    // Přímé propojení na HTML prvek pro spolehlivé otevření foťáku na iOS
     btnTakePhoto.addEventListener('click', () => {
         if (cameraInput) {
             cameraInput.click();
         }
     });
 
-    // Zpracování vyfocené fotky
     if (cameraInput) {
         cameraInput.addEventListener('change', (e) => {
             const file = e.target.files[0];
@@ -153,7 +172,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     saveData();
                     updateUIState();
                 }
-                cameraInput.value = ''; // Reset, aby šlo vyfotit další
+                cameraInput.value = '';
             };
             reader.readAsDataURL(file);
         });
