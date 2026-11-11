@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Evidence surovin</title>
+    <link rel="stylesheet" href="style.css">
+    <!-- Knihovna JSZip pro generování ZIP archivu -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Evidence surovin</h1>
+            <p>Fotografická evidence cukrářských zakázek</p>
+        </header>
+
+        <!-- Krok 1: Výběr zakázky -->
+        <section class="card">
+            <h2>1. Vyber zakázku</h2>
+            <div class="form-group">
+                <label for="active-order">Aktivní zakázka</label>
+                <select id="active-order">
+                    <option value="">Nejprve vytvoř zakázku</option>
+                </select>
+            </div>
+            <div class="form-row">
+                <input type="text" id="new-order-name" placeholder="Název zakázky, např. Makronky – kavárna">
+                <button id="btn-add-order" class="btn secondary">Přidat</button>
+            </div>
+            <div class="form-group" style="margin-top: 15px;">
+                <label for="order-date">Datum zakázky</label>
+                <div class="input-with-icon">
+                    <input type="date" id="order-date">
+                </div>
+            </div>
+        </section>
+
+        <!-- Krok 2: Vyfoť surovinu -->
+        <section class="card">
+            <h2>2. Vyfoť surovinu</h2>
+            <!-- Skrytý input pro fotoaparát -->
+            <input type="file" id="camera-input" accept="image/*" capture="environment" style="display: none;">
+            <button id="btn-take-photo" class="btn primary" disabled>
+                📷 Vyfotit surovinu
+            </button>
+            <p class="hint">Po pořízení fotografie se automaticky přidá k právě vybrané zakázce.</p>
+        </section>
+
+        <!-- Krok 3: Fotografie zakázky -->
+        <section class="card">
+            <h2>3. Fotografie zakázky <span id="photo-count" class="badge">0 fotografií</span></h2>
+            <div id="photos-container" class="photos-grid">
+                <p class="empty-text">Vyber zakázku a pořiď první fotografii.</p>
+            </div>
+            <div class="card-actions">
+                <button id="btn-export" class="btn light" disabled>Exportovat zakázku</button>
+                <button id="btn-delete" class="btn light-danger" disabled>Smazat zakázku</button>
+            </div>
+            <p class="hint" style="margin-top: 10px;">Export vytvoří ZIP s názvem zakázky a všemi jejími fotografiemi.</p>
+        </section>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
