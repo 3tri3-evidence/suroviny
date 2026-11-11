@@ -39,7 +39,6 @@
         <!-- Krok 2: Vyfoť surovinu -->
         <section class="card">
             <h2>2. Vyfoť surovinu</h2>
-            <!-- Pevný skrytý input pro fotoaparát (klíčový pro spolehlivost na iOS) -->
             <input type="file" id="camera-input" accept="image/*" capture="environment" style="display: none;">
             <button id="btn-take-photo" class="btn primary" disabled>
                 📷 Vyfotit surovinu
@@ -59,6 +58,13 @@
             </div>
             <p class="hint" style="margin-top: 10px;">Export vytvoří ZIP s názvem zakázky a všemi jejími fotografiemi.</p>
         </section>
+    </div>
+
+    <!-- Modální okno pro plný náhled fotky -->
+    <div id="photoModal" class="modal">
+        <button class="modal-close" id="modal-close-btn">&times;</button>
+        <img class="modal-content" id="modal-img">
+        <div class="modal-hint">📱 Podržte prst na fotce pro uložení do telefonu</div>
     </div>
 
     <script src="script.js"></script>
