@@ -12,6 +12,11 @@ document.addEventListener('DOMContentLoaded', () => {
     const btnExport = document.getElementById('btn-export');
     const btnDelete = document.getElementById('btn-delete');
 
+    // Prvky pro modální okno náhledu
+    const photoModal = document.getElementById('photoModal');
+    const modalImg = document.getElementById('modal-img');
+    const modalCloseBtn = document.getElementById('modal-close-btn');
+
     const todayStr = new Date().toISOString().split('T')[0];
     inputOrderDate.value = todayStr;
 
@@ -65,32 +70,37 @@ document.addEventListener('DOMContentLoaded', () => {
         photosContainer.innerHTML = '';
 
         order.photos.forEach((photoData, index) => {
-            const item = document.createElement('div');
-            item.className = 'photo-item';
-            
+            const fileName = `00${index + 1}.jpg`;
+
+            const card = document.createElement('div');
+            card.className = 'photo-card';
+
+            // Kliknutelná miniatura pro otevření fotky přes celou obrazovku jedním klepnutím
+            const thumbContainer = document.createElement('div');
+            thumbContainer.className = 'photo-thumb-container';
+            thumbContainer.onclick = () => {
+                modalImg.src = photoData;
+                photoModal.style.display = 'flex';
+            };
+
             const img = document.createElement('img');
             img.src = photoData;
-            img.alt = `Surovina ${index + 1}`;
-            item.appendChild(img);
+            img.alt = fileName;
+            thumbContainer.appendChild(img);
+            card.appendChild(thumbContainer);
 
-            const actions = document.createElement('div');
-            actions.className = 'photo-actions';
+            // Spodní lišta s názvem a tlačítkem pro smazání
+            const info = document.createElement('div');
+            info.className = 'photo-info';
 
-            // Tlačítko pro stažení konkrétní fotky do telefonu
-            const dlBtn = document.createElement('button');
-            dlBtn.className = 'photo-action-btn';
-            dlBtn.innerHTML = '📥 Uložit';
-            dlBtn.title = 'Uložit do telefonu';
-            dlBtn.onclick = (e) => {
-                e.stopPropagation();
-                triggerDownload(photoData, `${order.name}_${index + 1}.jpg`);
-            };
-            actions.appendChild(dlBtn);
+            const nameSpan = document.createElement('span');
+            nameSpan.className = 'photo-name';
+            nameSpan.textContent = fileName;
+            info.appendChild(nameSpan);
 
-            // Tlačítko pro smazání fotky
             const delBtn = document.createElement('button');
-            delBtn.className = 'photo-action-btn';
-            delBtn.innerHTML = '❌';
+            delBtn.className = 'photo-del-btn';
+            delBtn.innerHTML = '🗑️';
             delBtn.title = 'Smazat fotografii';
             delBtn.onclick = (e) => {
                 e.stopPropagation();
@@ -100,14 +110,23 @@ document.addEventListener('DOMContentLoaded', () => {
                     updateUIState();
                 }
             };
-            actions.appendChild(delBtn);
+            info.appendChild(delBtn);
 
-            item.appendChild(actions);
-            photosContainer.appendChild(item);
+            card.appendChild(info);
+            photosContainer.appendChild(card);
         });
     }
 
-    // Pomocná funkce pro vyvolání systémového stahování/uložení
+    // Zavření modálního okna
+    modalCloseBtn.onclick = () => {
+        photoModal.style.display = 'none';
+    };
+    photoModal.onclick = (e) => {
+        if (e.target === photoModal) {
+            photoModal.style.display = 'none';
+        }
+    };
+
     function triggerDownload(dataUrl, filename) {
         const a = document.createElement('a');
         a.href = dataUrl;
@@ -149,7 +168,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // Jakmile se vyfotí fotka, automaticky se uloží do aplikace A zároveň se vyvolá dotaz na uložení do telefonu
     if (cameraInput) {
         cameraInput.addEventListener('change', (e) => {
             const file = e.target.files[0];
@@ -165,10 +183,10 @@ document.addEventListener('DOMContentLoaded', () => {
                     saveData();
                     updateUIState();
 
-                    // AUTOMATICKÉ VYVOLÁNÍ ULOŽENÍ DO TELEFONU
+                    // Pokus o automatické vyvolání systémového stažení souboru do telefonu
                     const photoIndex = order.photos.length;
                     const safeName = order.name.replace(/[^a-zA-Z0-9áčďéěíňóřšťúůýžÁČĎÉĚÍŇÓŘŠŤÚŮÝŽ _-]/g, '_');
-                    triggerDownload(photoBase64, `${safeName}_${photoIndex}.jpg`);
+                    triggerDownload(photoBase64, `${safeName}_00${photoIndex}.jpg`);
                 }
                 cameraInput.value = '';
             };
@@ -201,7 +219,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         order.photos.forEach((photoBase64, index) => {
             const base64Data = photoBase64.split(',')[1];
-            folder.file(`surovina_${index + 1}.jpg`, base64Data, {base64: true});
+            folder.file(`00${index + 1}.jpg`, base64Data, {base64: true});
         });
 
         try {
