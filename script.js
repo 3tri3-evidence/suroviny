@@ -6,6 +6,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const btnAddOrder = document.getElementById('btn-add-order');
     const inputOrderDate = document.getElementById('order-date');
     const btnTakePhoto = document.getElementById('btn-take-photo');
+    const cameraInput = document.getElementById('camera-input'); // Pevný prvek z HTML
     const photosContainer = document.getElementById('photos-container');
     const photoCountBadge = document.getElementById('photo-count');
     const btnExport = document.getElementById('btn-export');
@@ -130,14 +131,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
     selectOrder.addEventListener('change', updateUIState);
 
-    // Spolehlivé spuštění fotoaparátu/galerie přizpůsobené pro iPhone (Safari)
+    // Přímé propojení na HTML prvek pro spolehlivé otevření foťáku na iOS
     btnTakePhoto.addEventListener('click', () => {
-        const dynamicInput = document.createElement('input');
-        dynamicInput.type = 'file';
-        dynamicInput.accept = 'image/*';
-        dynamicInput.capture = 'environment';
-        
-        dynamicInput.onchange = (e) => {
+        if (cameraInput) {
+            cameraInput.click();
+        }
+    });
+
+    // Zpracování vyfocené fotky
+    if (cameraInput) {
+        cameraInput.addEventListener('change', (e) => {
             const file = e.target.files[0];
             if (!file) return;
 
@@ -150,12 +153,11 @@ document.addEventListener('DOMContentLoaded', () => {
                     saveData();
                     updateUIState();
                 }
+                cameraInput.value = ''; // Reset, aby šlo vyfotit další
             };
             reader.readAsDataURL(file);
-        };
-
-        dynamicInput.click();
-    });
+        });
+    }
 
     btnDelete.addEventListener('click', () => {
         const activeOrderId = selectOrder.value;
