@@ -163,8 +163,8 @@ select:focus, input:focus {
 
 .photos-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
-    gap: 10px;
+    grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+    gap: 12px;
     margin-bottom: 15px;
     min-height: 60px;
 }
@@ -177,42 +177,101 @@ select:focus, input:focus {
     padding: 15px 0;
 }
 
-.photo-item {
-    position: relative;
-    border-radius: 8px;
-    overflow: hidden;
-    aspect-ratio: 1;
-    background: #eee;
+.photo-card {
+    background: #fff;
     border: 1px solid var(--border-color);
+    border-radius: 10px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
 }
 
-.photo-item img {
+.photo-thumb-container {
+    width: 100%;
+    aspect-ratio: 4/3;
+    background: #edf2f7;
+    cursor: pointer;
+    position: relative;
+}
+
+.photo-thumb-container img {
     width: 100%;
     height: 100%;
     object-fit: cover;
+    display: block;
 }
 
-.photo-actions {
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    background: rgba(0,0,0,0.6);
+.photo-info {
+    padding: 8px 10px;
     display: flex;
-    justify-content: space-around;
-    padding: 4px;
+    justify-content: space-between;
+    align-items: center;
+    background: #fff;
+    border-top: 1px solid var(--border-color);
 }
 
-.photo-action-btn {
+.photo-name {
+    font-size: 12px;
+    color: var(--text-muted);
+    font-weight: 500;
+}
+
+.photo-del-btn {
     background: none;
     border: none;
-    color: white;
-    font-size: 12px;
     cursor: pointer;
-    padding: 2px 6px;
+    font-size: 14px;
+    padding: 2px;
+    color: #e53e3e;
 }
 
 .card-actions {
     display: flex;
     gap: 10px;
+}
+
+/* Modální okno pro zobrazení fotky přes celou obrazovku */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.9);
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+}
+
+.modal-content {
+    max-width: 100%;
+    max-height: 75vh;
+    object-fit: contain;
+    border-radius: 8px;
+}
+
+.modal-close {
+    position: absolute;
+    top: 20px;
+    right: 25px;
+    color: #fff;
+    font-size: 36px;
+    font-weight: bold;
+    cursor: pointer;
+    background: none;
+    border: none;
+}
+
+.modal-hint {
+    color: #fff;
+    background: rgba(255, 255, 255, 0.2);
+    padding: 10px 16px;
+    border-radius: 8px;
+    margin-top: 20px;
+    font-size: 14px;
+    text-align: center;
 }
