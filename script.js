@@ -12,7 +12,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const btnExport = document.getElementById('btn-export');
     const btnDelete = document.getElementById('btn-delete');
 
-    // Prvky pro modální okno náhledu
     const photoModal = document.getElementById('photoModal');
     const modalImg = document.getElementById('modal-img');
     const modalCloseBtn = document.getElementById('modal-close-btn');
@@ -21,7 +20,11 @@ document.addEventListener('DOMContentLoaded', () => {
     inputOrderDate.value = todayStr;
 
     function saveData() {
-        localStorage.setItem('cukrarna_orders', JSON.stringify(orders));
+        try {
+            localStorage.setItem('cukrarna_orders', JSON.stringify(orders));
+        } catch (e) {
+            alert('Paměť prohlížeče je plná. Smažte prosím staré zakázky.');
+        }
     }
 
     function renderOrders() {
@@ -75,12 +78,13 @@ document.addEventListener('DOMContentLoaded', () => {
             const card = document.createElement('div');
             card.className = 'photo-card';
 
-            // Kliknutelná miniatura pro otevření fotky přes celou obrazovku jedním klepnutím
             const thumbContainer = document.createElement('div');
             thumbContainer.className = 'photo-thumb-container';
             thumbContainer.onclick = () => {
-                modalImg.src = photoData;
-                photoModal.style.display = 'flex';
+                if (photoModal && modalImg) {
+                    modalImg.src = photoData;
+                    photoModal.style.display = 'flex';
+                }
             };
 
             const img = document.createElement('img');
@@ -89,7 +93,6 @@ document.addEventListener('DOMContentLoaded', () => {
             thumbContainer.appendChild(img);
             card.appendChild(thumbContainer);
 
-            // Spodní lišta s názvem a tlačítkem pro smazání
             const info = document.createElement('div');
             info.className = 'photo-info';
 
@@ -117,15 +120,10 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // Zavření modálního okna
-    modalCloseBtn.onclick = () => {
-        photoModal.style.display = 'none';
-    };
-    photoModal.onclick = (e) => {
-        if (e.target === photoModal) {
-            photoModal.style.display = 'none';
-        }
-    };
+    if (modalCloseBtn && photoModal) {
+        modalCloseBtn.onclick = () => { photoModal.style.display = 'none'; };
+        photoModal.onclick = (e) => { if (e.target === photoModal) { photoModal.style.display = 'none'; } };
+    }
 
     function triggerDownload(dataUrl, filename) {
         const a = document.createElement('a');
@@ -134,6 +132,44 @@ document.addEventListener('DOMContentLoaded', () => {
         document.body.appendChild(a);
         a.click();
         document.body.removeChild(a);
+    }
+
+    // Funkce pro zmenšení a kompresi fotky před uložením, aby nezabírala paměť a nezhroutila se
+    function compressImage(file, callback) {
+        const reader = new FileReader();
+        reader.onload = function (e) {
+            const img = new Image();
+            img.onload = function () {
+                const canvas = document.createElement('canvas');
+                const MAX_WIDTH = 1000;
+                const MAX_HEIGHT = 1000;
+                let width = img.width;
+                let height = img.height;
+
+                if (width > height) {
+                    if (width > MAX_WIDTH) {
+                        height *= MAX_WIDTH / width;
+                        width = MAX_WIDTH;
+                    }
+                } else {
+                    if (height > MAX_HEIGHT) {
+                        width *= MAX_HEIGHT / height;
+                        height = MAX_HEIGHT;
+                    }
+                }
+
+                canvas.width = width;
+                canvas.height = height;
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(img, 0, 0, width, height);
+
+                // Převedení do JPG s 80% kvalitou (ideální poměr velikosti a ostrosti)
+                const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.8);
+                callback(compressedDataUrl);
+            };
+            img.src = e.target.result;
+        };
+        reader.readAsDataURL(file);
     }
 
     btnAddOrder.addEventListener('click', () => {
@@ -173,24 +209,21 @@ document.addEventListener('DOMContentLoaded', () => {
             const file = e.target.files[0];
             if (!file) return;
 
-            const reader = new FileReader();
-            reader.onload = function(event) {
+            // Zpracování a komprese vyfocené fotky
+            compressImage(file, (compressedPhoto) => {
                 const activeOrderId = selectOrder.value;
                 const order = orders.find(o => o.id == activeOrderId);
                 if (order) {
-                    const photoBase64 = event.target.result;
-                    order.photos.push(photoBase64);
+                    order.photos.push(compressedPhoto);
                     saveData();
                     updateUIState();
 
-                    // Pokus o automatické vyvolání systémového stažení souboru do telefonu
                     const photoIndex = order.photos.length;
                     const safeName = order.name.replace(/[^a-zA-Z0-9áčďéěíňóřšťúůýžÁČĎÉĚÍŇÓŘŠŤÚŮÝŽ _-]/g, '_');
-                    triggerDownload(photoBase64, `${safeName}_00${photoIndex}.jpg`);
+                    triggerDownload(compressedPhoto, `${safeName}_00${photoIndex}.jpg`);
                 }
                 cameraInput.value = '';
-            };
-            reader.readAsDataURL(file);
+            });
         });
     }
 
