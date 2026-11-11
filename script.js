@@ -76,33 +76,14 @@ document.addEventListener('DOMContentLoaded', () => {
             const actions = document.createElement('div');
             actions.className = 'photo-actions';
 
-            // Tlačítko pro spolehlivé zobrazení a uložení do telefonu bez chyb o internetu
+            // Tlačítko pro stažení konkrétní fotky do telefonu
             const dlBtn = document.createElement('button');
             dlBtn.className = 'photo-action-btn';
             dlBtn.innerHTML = '📥 Uložit';
             dlBtn.title = 'Uložit do telefonu';
             dlBtn.onclick = (e) => {
                 e.stopPropagation();
-                // Otevře čisté okno s obrázkem, kde funguje podržení prstu a uložení do fotek
-                const win = window.open();
-                if (win) {
-                    win.document.write(`
-                        <html>
-                            <head><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>${order.name} - foto ${index + 1}</title></head>
-                            <body style="margin:0; background:#111; display:flex; flex-direction:column; align-items:center; justify-content:center; min-height:100vh; font-family:sans-serif; color:white; text-align:center; padding:15px;">
-                                <div style="background:rgba(255,255,255,0.155); padding:12px 18px; border-radius:10px; margin-bottom:15px; font-size:15px; max-width:90%;">
-                                    📱 <b>Jak uložit do iPhonu:</b><br>Podržte prst na fotce a zvolte <b>„Uložit do fotek“</b>.
-                                </div>
-                                <img src="${photoData}" style="max-width:100%; max-height:70vh; border-radius:8px; object-fit:contain;" />
-                                <br>
-                                <button onclick="window.close()" style="padding:12px 24px; background:#fff; color:#000; border:none; border-radius:8px; font-weight:bold; font-size:15px; cursor:pointer; margin-top:10px;">Zavřít okno</button>
-                            </body>
-                        </html>
-                    `);
-                    win.document.close();
-                } else {
-                    alert('Prohlížeč zablokoval otevření okna s fotkou. Povolte prosím vyskakovací okna.');
-                }
+                triggerDownload(photoData, `${order.name}_${index + 1}.jpg`);
             };
             actions.appendChild(dlBtn);
 
@@ -124,6 +105,16 @@ document.addEventListener('DOMContentLoaded', () => {
             item.appendChild(actions);
             photosContainer.appendChild(item);
         });
+    }
+
+    // Pomocná funkce pro vyvolání systémového stahování/uložení
+    function triggerDownload(dataUrl, filename) {
+        const a = document.createElement('a');
+        a.href = dataUrl;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
     }
 
     btnAddOrder.addEventListener('click', () => {
@@ -158,6 +149,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
+    // Jakmile se vyfotí fotka, automaticky se uloží do aplikace A zároveň se vyvolá dotaz na uložení do telefonu
     if (cameraInput) {
         cameraInput.addEventListener('change', (e) => {
             const file = e.target.files[0];
@@ -168,9 +160,15 @@ document.addEventListener('DOMContentLoaded', () => {
                 const activeOrderId = selectOrder.value;
                 const order = orders.find(o => o.id == activeOrderId);
                 if (order) {
-                    order.photos.push(event.target.result);
+                    const photoBase64 = event.target.result;
+                    order.photos.push(photoBase64);
                     saveData();
                     updateUIState();
+
+                    // AUTOMATICKÉ VYVOLÁNÍ ULOŽENÍ DO TELEFONU
+                    const photoIndex = order.photos.length;
+                    const safeName = order.name.replace(/[^a-zA-Z0-9áčďéěíňóřšťúůýžÁČĎÉĚÍŇÓŘŠŤÚŮÝŽ _-]/g, '_');
+                    triggerDownload(photoBase64, `${safeName}_${photoIndex}.jpg`);
                 }
                 cameraInput.value = '';
             };
@@ -209,13 +207,8 @@ document.addEventListener('DOMContentLoaded', () => {
         try {
             const content = await zip.generateAsync({type: 'blob'});
             const url = URL.createObjectURL(content);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `${folderName}.zip`;
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            URL.revokeObjectURL(url);
+            triggerDownload(url, `${folderName}.zip`);
+            setTimeout(() => URL.revokeObjectURL(url), 1000);
         } catch (err) {
             alert('Chyba při vytváření ZIP archivu.');
             console.error(err);
